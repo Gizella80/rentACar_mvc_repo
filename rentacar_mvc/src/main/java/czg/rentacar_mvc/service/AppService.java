@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import czg.rentacar_mvc.db.Database;
 import czg.rentacar_mvc.dto.CarDto;
 import czg.rentacar_mvc.dto.CarDtoList;
+import czg.rentacar_mvc.dto.MessageDto;
 import czg.rentacar_mvc.dto.RentalDto;
 import czg.rentacar_mvc.model.Car;
 import czg.rentacar_mvc.model.Rental;
@@ -28,66 +29,92 @@ public class AppService {
 	public CarDtoList getAllAvaibleCar(LocalDate rentStart, LocalDate rentFinish) {
 		
 		CarDtoList carDtoList = null;
-		List<Car> cars = new ArrayList<>();
-		List<CarDto> allCarDtos = new ArrayList<>();
-		List<CarDto> freeCarDtos = new ArrayList<>();
+		List<CarDto> availableCarDtos = new ArrayList<>();
 		
-		// lekérem és összehozom az összes CarDto-t
-		cars = db.getAllCar();
-		for(int index = 0; index < cars.size();index++) {
+		List<Rental> reservationList = db.getReservationsBetweenDates(rentStart, rentFinish);
+		List<Car> allCars = db.getAllCars();
+		
+		
+		for(int index = 0; index < reservationList.size(); index++) {
 			
-			Car currentCar = cars.get(index);
-			List<Rental> rentals = db.getAllRentalsByCarId(currentCar.getId());
-			List<RentalDto> rentalDtos = new ArrayList<>();
-			for (int index_rentals = 0 ;index_rentals < rentals.size();index_rentals++) {
-				Rental currentRental = rentals.get(index_rentals);
-				RentalDto rentalDto = new RentalDto(currentRental.getRentStart(),currentRental.getRentFinish());
-				rentalDtos.add(rentalDto);
+			Rental currentReservation = reservationList.get(index);
+			int reservedCarId = currentReservation.getCarId();
+			
+			
+			for(int carIndex = 0; carIndex < allCars.size(); carIndex++) {
 				
-			}
-			CarDto currCarDto = new CarDto(currentCar.getType(),currentCar.getColor(),currentCar.getRentFee(),rentalDtos);
-			allCarDtos.add(currCarDto);
-		}
-		// ki választom azokat a CarDto-kat amik szabadok abban az időben
-		for(int index_allCarDto = 0; index_allCarDto  < allCarDtos.size(); index_allCarDto++) {
-			
-			CarDto currentCarDto = allCarDtos.get(index_allCarDto);
-			if(currentCarDto.isAvailable(rentStart, rentFinish) == true) {
-				freeCarDtos.add(currentCarDto);
+				Car currentCar = allCars.get(carIndex);
+				if(currentCar.getId() == reservedCarId) {
+					
+					allCars.remove(carIndex);
+					break;
+				}
 			}
 		}
-		//
-		if(freeCarDtos!=null) {
-			carDtoList = new CarDtoList(freeCarDtos);
-		}
+		if(allCars.size()> 0) {
+			for(int index_allCar = 0; index_allCar < allCars.size(); index_allCar++) {
+				
+				Car currentCar = allCars.get(index_allCar);
+				CarDto currentCarDto = new CarDto(
+						currentCar.getId(),
+						currentCar.getType(),
+						currentCar.getColor(),
+						currentCar.getRentFee());
+				
+				
+				availableCarDtos.add(currentCarDto);
+			}
+			carDtoList = new CarDtoList(availableCarDtos,rentStart,rentFinish);
+		
 			
+		}else {
+			
+			 carDtoList = null;
+		} 
 		
 		
 		return carDtoList;
 	}
 
-	public CarDto persistAndMakeReservation(LocalDate startTime, LocalDate finishTime, String type, String name,
-			String email, String phone) {
-		CarDto carDto = null;
 	
-		if(type!= null && name != null && email != null && phone != null) {
-			Car car = db.getCarByType(type);
-			
-			Rental rental = new Rental(0,car.getId(),startTime,finishTime);
-			db.persistRentalObject(rental);
-			List<Rental> rentals = db.getAllRentalsByCarId(car.getId());
-			List<RentalDto> rentalDtos = new ArrayList<>();
-			for (int index_rentals = 0 ;index_rentals < rentals.size();index_rentals++) {
-				Rental currentRental = rentals.get(index_rentals);
-				RentalDto rentalDto = new RentalDto(currentRental.getRentStart(),currentRental.getRentFinish());
-				rentalDtos.add(rentalDto);
-				
-			}
-			
-			 carDto= new CarDto(car.getType(),car.getColor(),car.getRentFee(),rentalDtos);
-			
-		}
-		return carDto;
+
+	public RentalDto getSelectedCarDto(LocalDate rentStart, LocalDate rentFinish, int carId) {
+		
+		RentalDto rentalDto = null;
+		
+		Car car = db.getCarById(carId);
+		
+		CarDto carDto = new CarDto( car.getId(),car.getType(),car.getColor(),car.getRentFee());
+		
+		rentalDto = new RentalDto(carDto,rentStart,rentFinish);
+		
+		
+		return rentalDto;
+	}
+
+	public MessageDto persistReservation(LocalDate startTime, LocalDate finishTime, int carId, String name, String address,
+			String phone, String email) {
+		MessageDto messageDto = null;
+		
+		Rental rental = new Rental (0,name,email,phone,address,startTime,finishTime,carId);
+		db.persistRentalObject(rental);
+		
+		Rental savedRental = db.getRentalByCarIdAndTime(carId,startTime,finishTime);
+		
+		Car car = db.getCarById(carId);
+		
+		CarDto carDto = new CarDto( car.getId(),car.getType(),car.getColor(),car.getRentFee());
+		RentalDto rentalDto = new RentalDto(carDto,savedRental.getRentStart(),savedRental.getRentFinish());
+		
+		messageDto = new MessageDto(
+				savedRental.getId(),
+				rentalDto,savedRental.getUser_name(),
+				savedRental.getUser_address(),
+				savedRental.getUser_email(),
+				savedRental.getUser_phone());
+		
+		
+		return messageDto;
 	}
 	
 	

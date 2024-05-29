@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import czg.rentacar_mvc.dto.CarDto;
 import czg.rentacar_mvc.dto.CarDtoList;
+import czg.rentacar_mvc.dto.MessageDto;
 import czg.rentacar_mvc.dto.RentalDto;
 import czg.rentacar_mvc.service.AppService;
 
@@ -30,70 +30,59 @@ public class AppController {
 	@GetMapping("/")
 	public String loadRentPage() {
 		
-		return "rent.html";
+		return "index.html";
 	}
 	
 	
-	@PostMapping("/rent")
+	@GetMapping("/cars")
 	public String getDataForFreeCars(
 			Model model,
 			@RequestParam("start") LocalDate rentStart,
 			@RequestParam("finish") LocalDate rentFinish) {
 		
-		String error = "There are no avaible Cars at this time";
-		String targetPage = "";
-		CarDtoList carDtoList = null;
 		
-		carDtoList = service.getAllAvaibleCar(rentStart,rentFinish);
+		CarDtoList avaiableCars = service.getAllAvaibleCar(rentStart, rentFinish);
 		
-		if(carDtoList != null) {
-			
-			RentalDto rentalDto = new RentalDto(rentStart,rentFinish);
-			model.addAttribute("rentalDto",rentalDto);
-			model.addAttribute("cardtolist",carDtoList);
-			targetPage ="cars.html";
-			
-		}else {
-			
-			model.addAttribute("error", error);
-			targetPage = "rent.html";
-			
-		}
+		model.addAttribute("avaiablecars", avaiableCars);
 		
 		
-		return targetPage;
+		return "index.html";
+	}
+	@GetMapping("/cars/startreserve")
+	public String chooseACar(
+			Model model,
+			@RequestParam("start") LocalDate rentStart,
+			@RequestParam("finish") LocalDate rentFinish,
+			@RequestParam("carid") int carId) {
+		
+		RentalDto reservationDto = service.getSelectedCarDto(rentStart,rentFinish,carId);
+		
+		
+		 model.addAttribute("reservationdto", reservationDto);	
+				
+		return "reserve.html";
 	}
 	
-	@PostMapping("/cars")
+	
+	
+	
+	@PostMapping("/cars/endreserve")
 	public String chooseAndReserveCar(
 			Model model,
 			@RequestParam("start") LocalDate startTime,
 			@RequestParam("finish") LocalDate finishTime,
-			@RequestParam("carType") String type,
+			@RequestParam("carid") int carId,
 			@RequestParam("name")String name,
 			@RequestParam("address") String address,
 			@RequestParam("email")String email,
 			@RequestParam("phone") String phone
 			) {
 		
-		String targetPage = "";
-		CarDto carDto = service.persistAndMakeReservation(startTime,finishTime,type,name,email,phone);
-		
-		String reserved = "Your reservation was sccessfull!!";
-		String error = "Something went wrong! Try again!";
-		if(carDto != null) {
-			
-			targetPage = "exit.html";
-			model.addAttribute("carDto",carDto);
-			model.addAttribute("reserved", reserved);
-			
-		}else {
-			model.addAttribute("error", error);
-			targetPage = "rent.html";
-		}
+		MessageDto messageDto = service.persistReservation(startTime,finishTime,carId,name,address,phone,email);
+
+		model.addAttribute("messagedto", messageDto);
 	
-	
-		return targetPage;	
+		return "reserve.html";	
 	}
 	
 	

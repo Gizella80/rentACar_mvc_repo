@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>Insert title here</title>
+	</head>
+	<body>
+	
+		<p>Adja meg az adatait a foglaláshoz!</p>
+		<form action ="/cars/endreserve" method="post">
+		<input type="hidden" name="start" th:value ="${reservationdto.getRentStart()}"/>
+		<input type="hidden" name="finish" th:value ="${reservationdto.getRentFinish()}"/>
+		<input type="hidden" name="carid" th:value ="${reservationdto.getCarDto().getId()}"/>
+		<input type="text" name="name" placeholder ="NAME"/>
+		<input type="text" name="address" placeholder ="ADDRESS"/>
+		<input type="text" name="email" placeholder ="EMAIL"/>
+		<input type="text" name="phone" placeholder ="PHOME"/>
+		<input type="submit"/>
+		</form>
+		
+		
+		
+		<p th:if="${messagedto} != null" th:text="${messagedto}"> You successfully reserved!</p>
+	
+	</body>
+	
+	
+	
+</html>
+
+

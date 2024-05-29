@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>Insert title here</title>
+	</head>
+	<body>
+	
+		<p> Üdvözlöm az autoKölcsönzőben!</p>
+		<p> Mettől-meddig szeretne foglalni?</p>
+		<form action ="/cars" method="get">
+		<input type="date" name="start" />
+		<input type="date" name="finish"/>
+		<input type="submit"/>
+		</form>
+		
+		
+		<p>Választható autók erre az időszakra</p>
+		<table>
+			<tr>
+				<th>Típus</th>
+				<th>szín</th>
+				<th>Ár/nap</th>
+				
+			</tr>
+			<tr th:each="car : ${avaiablecars.getAvaibleCars()}" >
+				<td th:text= "${car.getType()}"></td>
+				<td th:text= "${car.getColor()}"></td>
+				<td th:text= "${car.getRentFee()} + 'Ft/nap'"></td>
+				
+				
+			</tr>	
+			
+			
+			<p> Válasszon Autót!!</p>
+			<form action="/cars/startreserve" method="get">
+			
+
+			<select name ="carid" >
+			
+				<option th:each = "freecar  : ${cardtolist.getAvaibleCars()}" th:text = "${freecar.getType()}"
+					th:value ="${freecar.getId()}"/>
+				
+			</select>
+			<input type = "submit"/>
+		</form>
+				
+		</table>
+		
+	
+	</body>
+</html>

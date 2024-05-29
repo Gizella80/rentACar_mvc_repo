@@ -1,5 +1,6 @@
 package czg.rentacar_mvc.db;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.hibernate.Session;
@@ -27,7 +28,7 @@ public class Database {
 		
 	}
 	
-	public List<Car> getAllCar(){
+	public List<Car> getAllCars(){
 		
 		List<Car> cars = null;
 		 
@@ -54,7 +55,7 @@ public class Database {
 		Session session = sessionFactory.openSession();
 		Transaction tx = session.beginTransaction();
 		
-		SelectionQuery<Rental> query = session.createSelectionQuery("SELECT r FROM Rental WHERE r.CarId =? 1 ORDER By r.rentStart", Rental.class);
+		SelectionQuery<Rental> query = session.createSelectionQuery("SELECT r FROM Rental r WHERE r.carId =? 1 ORDER By rentStart", Rental.class);
 		query.setParameter(1, carId);
 		
 		rentals = query.getResultList();
@@ -102,6 +103,81 @@ public class Database {
 		session.close();
 	
 	 }
+
+	public List<Rental> getReservationsBetweenDates(LocalDate startTime, LocalDate finishTime) {
+		Session session = sessionFactory.openSession();
+		Transaction tx = session.beginTransaction();
+
+		
+		SelectionQuery<Rental> selectionQuery = 
+				session.createSelectionQuery(
+							"SELECT r FROM Reservation r WHERE "
+							+ "(r.rentStart <= ?1 AND r.rentFinish <= ?2 AND r.rentFinish >= ?1)		OR"
+							+ "(r.rentStart <= ?2 AND r.rentStart >= ?1 AND r.rentFinish >= ?2) 	OR"
+							+ "(r.rentStart >= ?1 AND r.rentFinish <= ?2) 							OR"
+							+ "(r.rentStart <= ?1 AND r.rentFinish >= ?2)", 
+						
+							Rental.class);
+		
+		selectionQuery.setParameter(1, startTime);
+		selectionQuery.setParameter(2, finishTime);
+		List<Rental> reservations = selectionQuery.getResultList();
+		for (int i =0 ;i<reservations.size();i++) {
+			System.out.println(reservations.get(i));
+		}
+		
+		tx.commit();
+		session.close();
+		
+		return reservations;
+		
+	}
+
+	public Car getCarById(int carId) {
+		Car car = null;
+		
+		Session session = sessionFactory.openSession();
+		Transaction tx = session.beginTransaction();
+		
+		 car = session.get(Car.class,carId);
+		 
+		tx.commit();
+		session.close();
+				 
+		return car;
+	}
+
+	public Rental getRentalByCarIdAndTime(int carId, LocalDate startTime, LocalDate finishTime) {
+		Rental rental = null;
+		Session session = sessionFactory.openSession();
+		Transaction tx = session.beginTransaction();
+
+		
+		SelectionQuery<Rental> selectionQuery = 
+				session.createSelectionQuery(
+							"SELECT r FROM Rental r WHERE r.rentStart=?1 AND r.rentFinish=?2 and r.carId=?3",
+							
+						
+							Rental.class);
+		
+		selectionQuery.setParameter(1, startTime);
+		selectionQuery.setParameter(2, finishTime);
+		selectionQuery.setParameter(3, carId);
+		
+		List<Rental> rentals = selectionQuery.getResultList();
+		
+		if(rentals.size() > 0) {
+			rental = rentals.get(0);
+		}
+		
+		
+		
+		tx.commit();
+		session.close();
+		
+		
+		return rental;
+	}
 	
 	
 	
