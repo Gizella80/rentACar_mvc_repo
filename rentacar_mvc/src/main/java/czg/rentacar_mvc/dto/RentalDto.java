@@ -1,6 +1,7 @@
 package czg.rentacar_mvc.dto;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 
 public class RentalDto {
 	
@@ -53,7 +54,15 @@ public class RentalDto {
 				+ "]";
 	}
 	
-	
+	public long getFullFee() {
+		
+		long fullFee = 0;
+
+		long days = ChronoUnit.DAYS.between(rentStart, rentFinish);
+		fullFee = days * selectedCar.getRentFee();
+		
+		return fullFee;
+	}
 
 
  

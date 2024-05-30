@@ -21,7 +21,7 @@ public class Rental {
 	@Column(name="user_name")
 	private String user_name;
 	
-	@Column(name="user_emal")
+	@Column(name="user_email")
 	private String user_email;
 	
 	@Column(name="user_phone")
@@ -42,10 +42,10 @@ public class Rental {
 	public Rental() {}
 	
 
-	public Rental(int id, String user_name, String user_email, String user_phone, String user_address,
+	public Rental( String user_name, String user_email, String user_phone, String user_address,
 			LocalDate rentStart, LocalDate rentFinish, int carId) {
 		super();
-		this.id = id;
+	
 		this.user_name = user_name;
 		this.user_email = user_email;
 		this.user_phone = user_phone;

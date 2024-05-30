@@ -16,35 +16,31 @@
 		
 		
 		<p>Választható autók erre az időszakra</p>
-		<table>
+		<table th:if ="${avaiablecars != null}">
 			<tr>
 				<th>Típus</th>
 				<th>szín</th>
 				<th>Ár/nap</th>
 				
 			</tr>
+			
 			<tr th:each="car : ${avaiablecars.getAvaibleCars()}" >
 				<td th:text= "${car.getType()}"></td>
 				<td th:text= "${car.getColor()}"></td>
 				<td th:text= "${car.getRentFee()} + 'Ft/nap'"></td>
-				
-				
+				<td>
+					<form action="/cars/startreserve" method="get">
+					
+						<input type="hidden" name="start" th:value ="${avaiablecars.getRentStart()}"/>
+						<input type="hidden" name="finish" th:value ="${avaiablecars.getRentFinish()}"/>
+						<input type="hidden" name="carid" th:value ="${car.getId()}"/>
+						<input type = "submit" value ="RESERVE"/>
+					</form>
+				</td>
 			</tr>	
 			
 			
-			<p> Válasszon Autót!!</p>
-			<form action="/cars/startreserve" method="get">
 			
-
-			<select name ="carid" >
-			
-				<option th:each = "freecar  : ${cardtolist.getAvaibleCars()}" th:text = "${freecar.getType()}"
-					th:value ="${freecar.getId()}"/>
-				
-			</select>
-			<input type = "submit"/>
-		</form>
-				
 		</table>
 		
 	

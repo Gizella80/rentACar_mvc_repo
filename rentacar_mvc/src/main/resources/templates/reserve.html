@@ -10,7 +10,8 @@
 		<form action ="/cars/endreserve" method="post">
 		<input type="hidden" name="start" th:value ="${reservationdto.getRentStart()}"/>
 		<input type="hidden" name="finish" th:value ="${reservationdto.getRentFinish()}"/>
-		<input type="hidden" name="carid" th:value ="${reservationdto.getCarDto().getId()}"/>
+		<input type="hidden" name="carid" th:value ="${reservationdto.getSelectedCar().getId()}"/>
+		
 		<input type="text" name="name" placeholder ="NAME"/>
 		<input type="text" name="address" placeholder ="ADDRESS"/>
 		<input type="text" name="email" placeholder ="EMAIL"/>

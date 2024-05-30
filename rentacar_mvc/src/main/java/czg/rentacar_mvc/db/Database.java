@@ -111,7 +111,7 @@ public class Database {
 		
 		SelectionQuery<Rental> selectionQuery = 
 				session.createSelectionQuery(
-							"SELECT r FROM Reservation r WHERE "
+							"SELECT r FROM Rental r WHERE "
 							+ "(r.rentStart <= ?1 AND r.rentFinish <= ?2 AND r.rentFinish >= ?1)		OR"
 							+ "(r.rentStart <= ?2 AND r.rentStart >= ?1 AND r.rentFinish >= ?2) 	OR"
 							+ "(r.rentStart >= ?1 AND r.rentFinish <= ?2) 							OR"
